@@ -21,3 +21,8 @@ To make instances of fzf-pass float, here's how you can do it:
 for_window [app_id="fzf-pass"] focus, floating enabled, border pixel 1
 
 ```
+
+### Contributing
+Any contributions are welcome! You can submit your PR's at [my Git server](https://git.reekynet.com/ReekyMarko/fzf-pass) (this is what I would prefer) or the mirrors at [GitLab](https://gitlab.com/ReekyMarko/fzf-pass) or [GitHub](https://github.com/ReekyMarko/fzf-pass)
+
+You can also report bugs and submit feature requests at the issue trackers on the previously mentioned platforms.
