@@ -6,6 +6,7 @@ This is a script heavily inspired by [rofi-pass](https://github.com/carnager/rof
 - Figure out a way to keep ydotool running after the popup terminal closes. Right now we can only support Sway because swaymsg is used to move the terminal out of the way
 - Add detection for different fields, and show them only if they are there. Right now every field is hardcoded
 - Add copy to clipboard option
+- Make the most used pass entries show up first (don't know if it can be done with fzf)
 
 ### Installation
 For Arch Linux users, there is an [AUR package](https://aur.archlinux.org/packages/fzf-pass). For all others, just download the script and point to it in your keybind.
