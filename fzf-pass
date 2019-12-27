@@ -8,7 +8,7 @@ if [ -z "$PASSFILE" ]; then
 fi
 
 PASSDATA="$(pass $PASSFILE)"
-USRNAME="$(echo "$PASSDATA" | grep "username:" | cut -d' ' -f2-)"
+USRNAME="$(echo "$PASSDATA" | egrep -i "username:|user:" | head -1 | cut -d' ' -f2-)"
 PASS="$(echo "$PASSDATA" | head -n 1)"
 URL="$(echo $PASSDATA | grep url: | cut -d' ' -f2-)"
 
