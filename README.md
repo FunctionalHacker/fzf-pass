@@ -3,7 +3,7 @@
 This is a script heavily inspired by [rofi-pass](https://github.com/carnager/rofi-pass), but with FZF instead of Rofi. There's still a lot to do and this is just the first version. As it is now, it is only compatible with [Sway](https://github.com/swaywm/sway) (see TODO section)
 
 ### TODO
-- Figure out a way to keep ydotool running after the popup terminal closes. Right now we can only support Sway because swaymsg is used to move the terminal out of the way
+- Figure out a way to keep ydotool / xdotool running after the popup terminal closes. Right now we can only support Sway because swaymsg is used to move the terminal out of the way
 - Add detection for different fields, and show them only if they are there. Right now every field is hardcoded
 - Add copy to clipboard option
 - Make the most used pass entries show up first (don't know if it can be done with fzf)
