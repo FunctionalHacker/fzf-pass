@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+
+function ldotool {
+    ydotool type ""
+    if [ $? eq 0 ]; then
+        ydotool "$@"
+    else
+        xdotool "$@"
+    fi
+    return $?
+}
+
+
 cd $HOME/.password-store
 PASSFILE=$(tree -Ffi | grep '.gpg' | sed 's/.gpg$//g' | sed 's/^..//' | fzf)
 
@@ -21,23 +33,28 @@ URL
 EOF
 );
 
-swaymsg move container to workspace 9
+CURRENT_WORKSPACE=$(swaymsg -t get_workspaces | jq -r '.[] | select(.focused == true)' | jq -r .name)
+if [ "$CURRENT_WORKSPACE" -eq 9 ]; then
+    swaymsg move container to workspace 8
+else
+    swaymsg move container to workspace 9
+fi
 
 case "$RESP" in
 	Autotype)
-		ydotool type "$USRNAME" && ydotool key Tab && ydotool type "$PASS" && ydotool key Enter
+		ldotool type "$USRNAME" && ldotool key Tab && ldotool type "$PASS" && ldotool key Enter
 		;;
 	Username)
-		ydotool type "$USRNAME"
+		ldotool type "$USRNAME"
 		;;
 	Password)
-		ydotool type "$PASS"
+		ldotool type "$PASS"
 		;;
 	OTP)
-		ydotool type "$(pass otp $PASSFILE)"
+		ldotool type "$(pass otp $PASSFILE)"
 		;;
 	URL)
-		ydotool type "$URL"
+		ldotool type "$URL"
 		;;
 	*)
 		exit 1
