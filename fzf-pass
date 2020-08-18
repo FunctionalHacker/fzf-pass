@@ -21,23 +21,27 @@ URL
 EOF
 );
 
-swaymsg move container to workspace 9
-
 case "$RESP" in
 	Autotype)
-		ydotool type "$USRNAME" && ydotool key Tab && ydotool type "$PASS" && ydotool key Enter
+		swaymsg exec "ydotool type \"${USRNAME}\" \
+		  && ydotool key TAB \
+		  && ydotool type \"${PASS}\" \
+		  && ydotool key Enter"
 		;;
 	Username)
-		ydotool type "$USRNAME"
+		swaymsg exec "ydotool type \"${USRNAME}\""
 		;;
 	Password)
-		ydotool type "$PASS"
+		swaymsg exec "ydotool type \"${PASS}\""
 		;;
 	OTP)
-		ydotool type "$(pass otp $PASSFILE)"
+		# sourcing ~/.profile  is required in case
+		# PASSWORD_STORE_ENABLE_EXTENSIONS is set.
+		swaymsg exec "source ~/.profile \
+		  && ydotool type \"$(pass otp "${PASSFILE}")"
 		;;
 	URL)
-		ydotool type "$URL"
+		swaymsg exec "ydotool type \"${URL}\""
 		;;
 	*)
 		exit 1
