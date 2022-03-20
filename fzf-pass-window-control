@@ -1,0 +1,4 @@
+#!/bin/bash
+
+W="$(xdotool getactivewindow)"
+x-terminal-emulator -e bash -c "$(dirname "$0")/fzf-pass $W"

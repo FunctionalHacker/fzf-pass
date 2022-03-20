@@ -1,61 +1,38 @@
 #!/usr/bin/env bash
 
+TO_WINDOW="$1"
+PASS_WINDOW="$(xdotool getactivewindow)"
 
-function ldotool {
-    ydotool type ""
-    if [ $? eq 0 ]; then
-        ydotool "$@"
-    else
-        xdotool "$@"
-    fi
-    return $?
-}
+set -euo pipefail
+IFS=$'\n\t'
 
-
-cd $HOME/.password-store
-PASSFILE=$(tree -Ffi | grep '.gpg' | sed 's/.gpg$//g' | sed 's/^..//' | fzf)
+cd "$HOME/.password-store" || exit 1
+PASSFILE="$(tree -Ffi | grep '.gpg' | sed 's/.gpg$//g' | sed 's/^..//' | fzf)"
 
 if [ -z "$PASSFILE" ]; then
 	exit 0
 fi
 
-PASSDATA="$(pass $PASSFILE)"
-USRNAME="$(echo "$PASSDATA" | egrep -i "username:|user:" | head -1 | cut -d' ' -f2-)"
-PASS="$(echo "$PASSDATA" | head -n 1)"
-URL="$(echo $PASSDATA | grep url: | cut -d' ' -f2-)"
+PASSDATA=$(pass "$PASSFILE")
 
-RESP=$(cat <<EOF | fzf
-Autotype
-Username
-Password
-OTP
-URL
-EOF
-);
+MENU=($(echo "$PASSDATA" | tail -n +2 | sed 's/\:.*//' ))
+MENU+=("DISPLAY")
+MENU+=("PASSWORD")
 
-CURRENT_WORKSPACE=$(swaymsg -t get_workspaces | jq -r '.[] | select(.focused == true)' | jq -r .name)
-if [ "$CURRENT_WORKSPACE" -eq 9 ]; then
-    swaymsg move container to workspace 8
-else
-    swaymsg move container to workspace 9
+RESP=$(printf "%s\n" "${MENU[@]}" | fzf --tac)
+
+if [ "$RESP" = "DISPLAY" ]; then
+    echo "$PASSDATA"
+    sleep 30
+    exit 0
 fi
 
-case "$RESP" in
-	Autotype)
-		ldotool type "$USRNAME" && ldotool key Tab && ldotool type "$PASS" && ldotool key Enter
-		;;
-	Username)
-		ldotool type "$USRNAME"
-		;;
-	Password)
-		ldotool type "$PASS"
-		;;
-	OTP)
-		ldotool type "$(pass otp $PASSFILE)"
-		;;
-	URL)
-		ldotool type "$URL"
-		;;
-	*)
-		exit 1
-esac
+O="$(echo "$PASSDATA" | head -n 1)"
+if [ "$RESP" != "PASSWORD" ]; then
+    O="$(echo "$PASSDATA" | awk -F ':' -v VAR="$RESP" '$1==VAR { Z=substr($0, length($1) + 2); gsub(/^[ \t]+|[ \t]+$/, "", Z); print Z }')"
+fi
+
+xdotool windowactivate "$TO_WINDOW"
+sleep 0.5
+xdotool type "$O"
+echo Done | aosd_cat -p 4 -n "Anonymous Pro 99" -R lime
