@@ -32,7 +32,7 @@ if [ "$RESP" != "PASSWORD" ]; then
     O="$(echo "$PASSDATA" | awk -F ':' -v VAR="$RESP" '$1==VAR { Z=substr($0, length($1) + 2); gsub(/^[ \t]+|[ \t]+$/, "", Z); print Z }')"
 fi
 
-xdotool windowminimize "$PASS_WINDOW"
+# xdotool windowminimize "$PASS_WINDOW"
 xdotool windowactivate "$TO_WINDOW"
 sleep 0.5
 xdotool type "$O"
