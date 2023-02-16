@@ -17,6 +17,13 @@ PASSDATA=$(pass "$PASSFILE")
 
 MENU=($(echo "$PASSDATA" | tail -n +2 | sed 's/\:.*//' ))
 MENU+=("DISPLAY")
+if echo "$PASSDATA" | grep '^otpauth' > /dev/null; then
+    MENU+=("OTP")
+fi
+if echo "$PASSDATA" | grep -i '^username: ' > /dev/null; then
+    MENU+=("USERNAME")
+    MENU="$(echo $MENU  | grep -v '^username: ')"
+fi
 MENU+=("PASSWORD")
 
 RESP=$(printf "%s\n" "${MENU[@]}" | fzf --tac)
@@ -30,6 +37,17 @@ fi
 O="$(echo "$PASSDATA" | head -n 1)"
 if [ "$RESP" != "PASSWORD" ]; then
     O="$(echo "$PASSDATA" | awk -F ':' -v VAR="$RESP" '$1==VAR { Z=substr($0, length($1) + 2); gsub(/^[ \t]+|[ \t]+$/, "", Z); print Z }')"
+fi
+if [ "$RESP" == "OTP" ]; then
+    O="$(pass otp "$PASSFILE")"
+fi
+if [ "$RESP" == "USERNAME" ]; then
+    O="$(pass show "$PASSFILE" | grep -i '^username: ' | sed 's/^[^:]\+\: *//')"
+fi
+
+if [ -z "$TO_WINDOW" ]; then
+    echo $O
+    exit
 fi
 
 # xdotool windowminimize "$PASS_WINDOW"
