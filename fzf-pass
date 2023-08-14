@@ -55,3 +55,4 @@ xdotool windowactivate "$TO_WINDOW"
 sleep 0.5
 xdotool type "$O"
 echo Done | aosd_cat -p 4 -n "Anonymous Pro 99" -R lime
+sleep 15
