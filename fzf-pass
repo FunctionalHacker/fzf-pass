@@ -1,44 +1,58 @@
 #!/usr/bin/env bash
 
-cd $HOME/.password-store
-PASSFILE=$(tree -Ffi | grep '.gpg' | sed 's/.gpg$//g' | sed 's/^..//' | fzf)
+TO_WINDOW="$1"
+PASS_WINDOW="$(xdotool getactivewindow)"
+
+set -euo pipefail
+IFS=$'\n\t'
+
+cd "$HOME/.password-store" || exit 1
+PASSFILE="$(tree -Ffi | grep '.gpg' | sed 's/.gpg$//g' | sed 's/^..//' | fzf)"
 
 if [ -z "$PASSFILE" ]; then
 	exit 0
 fi
 
-PASSDATA="$(pass $PASSFILE)"
-USRNAME="$(echo "$PASSDATA" | egrep -i "username:|user:" | head -1 | cut -d' ' -f2-)"
-PASS="$(echo "$PASSDATA" | head -n 1)"
-URL="$(echo $PASSDATA | grep url: | cut -d' ' -f2-)"
+PASSDATA=$(pass "$PASSFILE")
 
-RESP=$(cat <<EOF | fzf
-Autotype
-Username
-Password
-OTP
-URL
-EOF
-);
+MENU=($(echo "$PASSDATA" | tail -n +2 | sed 's/\:.*//' ))
+MENU+=("DISPLAY")
+if echo "$PASSDATA" | grep '^otpauth' > /dev/null; then
+    MENU+=("OTP")
+fi
+if echo "$PASSDATA" | grep -i '^username: ' > /dev/null; then
+    MENU+=("USERNAME")
+    MENU="$(echo $MENU  | grep -v '^username: ')"
+fi
+MENU+=("PASSWORD")
 
-swaymsg move container to workspace 9
+RESP=$(printf "%s\n" "${MENU[@]}" | fzf --tac)
 
-case "$RESP" in
-	Autotype)
-		ydotool type "$USRNAME" && ydotool key Tab && ydotool type "$PASS" && ydotool key Enter
-		;;
-	Username)
-		ydotool type "$USRNAME"
-		;;
-	Password)
-		ydotool type "$PASS"
-		;;
-	OTP)
-		ydotool type "$(pass otp $PASSFILE)"
-		;;
-	URL)
-		ydotool type "$URL"
-		;;
-	*)
-		exit 1
-esac
+if [ "$RESP" = "DISPLAY" ]; then
+    echo "$PASSDATA"
+    sleep 30
+    exit 0
+fi
+
+O="$(echo "$PASSDATA" | head -n 1)"
+if [ "$RESP" != "PASSWORD" ]; then
+    O="$(echo "$PASSDATA" | awk -F ':' -v VAR="$RESP" '$1==VAR { Z=substr($0, length($1) + 2); gsub(/^[ \t]+|[ \t]+$/, "", Z); print Z }')"
+fi
+if [ "$RESP" == "OTP" ]; then
+    O="$(pass otp "$PASSFILE")"
+fi
+if [ "$RESP" == "USERNAME" ]; then
+    O="$(pass show "$PASSFILE" | grep -i '^username: ' | sed 's/^[^:]\+\: *//')"
+fi
+
+if [ -z "$TO_WINDOW" ]; then
+    echo $O
+    exit
+fi
+
+# xdotool windowminimize "$PASS_WINDOW"
+xdotool windowactivate "$TO_WINDOW"
+sleep 0.5
+xdotool type "$O"
+echo Done | aosd_cat -p 4 -n "Anonymous Pro 99" -R lime
+sleep 15
